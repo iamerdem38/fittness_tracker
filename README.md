@@ -1,19 +1,17 @@
 # FitTrack All-in-One: Eine vollständige End-to-End Anleitung
 
-Willkommen bei FitTrack! Dies ist eine umfassende Anleitung, die Sie durch den gesamten Prozess führt: von den Voraussetzungen über die Einrichtung des Backends mit Supabase, die Konfiguration des Frontends bis hin zur Veröffentlichung Ihrer fertigen Web-Anwendung auf Netlify.
+Willkommen bei FitTrack! Dies ist eine umfassende Anleitung, die Sie durch den gesamten Prozess führt: von der Einrichtung des Backends mit Supabase, über die Konfiguration des Frontends bis hin zur Veröffentlichung Ihrer fertigen Web-Anwendung auf Netlify.
 
-**Hinweis:** Diese Version der Anwendung hat **keine Benutzer-Authentifizierung**. Alle Daten sind öffentlich und werden von allen Besuchern geteilt.
+**Hinweis:** Diese Version der Anwendung verwendet eine **sichere Benutzer-Authentifizierung**. Jeder Benutzer hat sein eigenes Konto und kann nur seine eigenen Daten sehen und verwalten.
 
 ## Inhaltsverzeichnis
 1.  [Projektübersicht & Funktionen](#1-projektübersicht--funktionen)
 2.  [Voraussetzungen](#2-voraussetzungen)
 3.  [Schritt 1: Supabase einrichten (Backend & Datenbank)](#3-schritt-1-supabase-einrichten-backend--datenbank)
 4.  [Schritt 2: Projekt lokal einrichten (Frontend)](#4-schritt-2-projekt-lokal-einrichten-frontend)
-5.  [**KRITISCH: Projekt bereinigen**](#5-kritisch-projekt-bereinigen)
-6.  [Schritt 3: Projekt auf GitHub hochladen](#6-schritt-3-projekt-auf-github-hochladen)
-7.  [Schritt 4: Auf Netlify veröffentlichen (Hosting)](#7-schritt-4-auf-netlify-veröffentlichen-hosting)
-8.  [Anleitung zur Benutzung der App](#8-anleitung-zur-benutzung-der-app)
-9.  [Verständnis der Projektstruktur](#9-verständnis-der-projektstruktur)
+5.  [Schritt 3: Projekt auf GitHub hochladen](#5-schritt-3-projekt-auf-github-hochladen)
+6.  [Schritt 4: Auf Netlify veröffentlichen (Hosting)](#6-schritt-4-auf-netlify-veröffentlichen-hosting)
+7.  [Anleitung zur Benutzung der App](#7-anleitung-zur-benutzung-der-app)
 
 ---
 
@@ -23,22 +21,21 @@ FitTrack ist eine moderne, responsive Web-Anwendung, die es Ihnen ermöglicht, a
 
 **Technologie-Stack:**
 - **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, DaisyUI
-- **Backend & Datenbank:** Supabase (PostgreSQL)
+- **Backend & Datenbank:** Supabase (PostgreSQL mit Authentifizierung und RLS)
 - **Hosting:** Netlify
-- **Wichtige Bibliotheken:** Recharts (Diagramme), react-router-dom (Routing), html5-qrcode (Barcode-Scanner)
 
 **Hauptfunktionen:**
-- ✅ **Fitness-Tracking:** Erstellen Sie eine Übungsbibliothek und protokollieren Sie Ihre Trainingseinheiten mit Sätzen, Gewichten und Wiederholungen.
-- ✅ **Ernährungs-Tracking:** Führen Sie ein Ernährungstagebuch. Fügen Sie Lebensmittel manuell oder **per Barcode-Scan** mit der Kamera hinzu.
-- ✅ **Einstellungen & Statistik:** Verfolgen Sie Ihr Körpergewicht und setzen Sie sich tägliche Kalorienziele.
-- ✅ **Daten-Visualisierung:** Aussagekräftige Diagramme (Heatmap für Workouts, Balkendiagramm für Kalorien, Liniendiagramm für Gewicht) zeigen Ihren Fortschritt.
+- ✅ **Sichere Benutzerkonten:** Registrierung und Login für jeden Benutzer.
+- ✅ **Datenschutz:** Benutzer können nur auf ihre eigenen, persönlichen Daten zugreifen.
+- ✅ **Fitness-Tracking:** Erstellen Sie eine persönliche Übungsbibliothek und protokollieren Sie Ihre Trainingseinheiten.
+- ✅ **Ernährungs-Tracking:** Führen Sie ein Ernährungstagebuch. Fügen Sie Lebensmittel manuell oder **per Barcode-Scan** hinzu.
+- ✅ **Profil & Statistik:** Verfolgen Sie Ihr Körpergewicht und setzen Sie sich persönliche Kalorienziele.
+- ✅ **Daten-Visualisierung:** Aussagekräftige Diagramme zeigen Ihren individuellen Fortschritt.
 
 ## 2. Voraussetzungen
 
-Bevor Sie beginnen, stellen Sie sicher, dass die folgende Software auf Ihrem Computer installiert ist:
 - **Node.js & npm:** [nodejs.org](https://nodejs.org/)
 - **Git:** [git-scm.com](https://git-scm.com/)
-- **Ein Code-Editor:** Visual Studio Code wird empfohlen.
 - **Ein GitHub-Konto.**
 
 ## 3. Schritt 1: Supabase einrichten (Backend & Datenbank)
@@ -48,21 +45,36 @@ Bevor Sie beginnen, stellen Sie sicher, dass die folgende Software auf Ihrem Com
 2.  Erstellen Sie ein **"New Project"**.
 3.  Speichern Sie Ihr **Datenbankpasswort** sicher ab.
 
-### 3.2. Datenbanktabellen erstellen
-Navigieren Sie zum **SQL Editor** in Ihrem Supabase-Projekt. Kopieren Sie die folgenden SQL-Befehle und führen Sie sie aus. **WICHTIG:** Wenn Sie alte Tabellen von einer früheren Version haben, löschen Sie diese zuerst!
+### 3.2. Datenbanktabellen erstellen (KRITISCH)
+Navigieren Sie zum **SQL Editor** in Ihrem Supabase-Projekt. **Löschen Sie alle alten Tabellen**, falls vorhanden. Kopieren Sie dann den **gesamten folgenden SQL-Codeblock**, fügen Sie ihn ein und klicken Sie auf **"RUN"**.
 
 ```sql
--- TABELLE FÜR GLOBALE EINSTELLUNGEN
-CREATE TABLE settings (
-  id BIGINT PRIMARY KEY,
+-- BENUTZERPROFILE-TABELLE
+CREATE TABLE profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT,
   calorie_goal INT DEFAULT 2000
 );
--- Standard-Einstellung einfügen
-INSERT INTO settings (id, calorie_goal) VALUES (1, 2000);
+
+-- FUNKTION ZUM ERSTELLEN EINES PROFILS FÜR NEUE BENUTZER
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email)
+  VALUES (new.id, new.email);
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- TRIGGER, DER DIE FUNKTION NACH DER REGISTRIERUNG AUFRUFT
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- TABELLE FÜR ÜBUNGEN
 CREATE TABLE exercises (
   id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
   description TEXT,
   muscle_group TEXT
@@ -71,6 +83,7 @@ CREATE TABLE exercises (
 -- TABELLE FÜR WORKOUTS
 CREATE TABLE workouts (
   id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   workout_date DATE NOT NULL
 );
 
@@ -79,6 +92,7 @@ CREATE TABLE workout_sets (
   id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
   workout_id BIGINT REFERENCES workouts(id) ON DELETE CASCADE NOT NULL,
   exercise_id BIGINT REFERENCES exercises(id) ON DELETE CASCADE NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   set_number INT NOT NULL,
   weight NUMERIC,
   reps INT
@@ -87,6 +101,7 @@ CREATE TABLE workout_sets (
 -- TABELLE FÜR LEBENSMITTEL
 CREATE TABLE food_items (
   id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
   calories NUMERIC,
   protein NUMERIC,
@@ -98,6 +113,7 @@ CREATE TABLE food_items (
 -- TABELLE FÜR GETRACKTE LEBENSMITTEL
 CREATE TABLE food_log (
   id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   food_item_id BIGINT REFERENCES food_items(id) ON DELETE CASCADE NOT NULL,
   log_date DATE NOT NULL,
   quantity_g NUMERIC NOT NULL
@@ -106,91 +122,77 @@ CREATE TABLE food_log (
 -- TABELLE FÜR GEWICHTS-LOG
 CREATE TABLE weight_log (
   id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   log_date DATE NOT NULL,
   weight_kg NUMERIC NOT NULL
 );
+
+-- ROW-LEVEL SECURITY (RLS) AKTIVIEREN
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE exercises ENABLE ROW LEVEL SECURITY;
+ALTER TABLE workouts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE workout_sets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE food_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE food_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE weight_log ENABLE ROW LEVEL SECURITY;
+
+-- SICHERHEITSREGELN ERSTELLEN (BENUTZER KÖNNEN NUR EIGENE DATEN SEHEN/BEARBEITEN)
+CREATE POLICY "Users can manage their own profile." ON profiles FOR ALL USING (auth.uid() = id);
+CREATE POLICY "Users can manage their own exercises." ON exercises FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own workouts." ON workouts FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own workout sets." ON workout_sets FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own food items." ON food_items FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own food logs." ON food_log FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own weight logs." ON weight_log FOR ALL USING (auth.uid() = user_id);
 ```
 
 ### 3.3. API-Schlüssel abrufen
-1.  Gehen Sie zu **Project Settings** -> **API**.
-2.  Kopieren Sie Ihre **Project URL** und Ihren **Project API Key** (den `anon` `public` key).
+Gehen Sie zu **Project Settings** -> **API** und kopieren Sie Ihre **Project URL** und Ihren **Project API Key** (`anon` `public`).
 
 ## 4. Schritt 2: Projekt lokal einrichten (Frontend)
 
 ### 4.1. Abhängigkeiten installieren
-Führen Sie im Projektverzeichnis `npm install` aus.
+Führen Sie `npm install` aus.
 
 ### 4.2. Umgebungsvariablen erstellen
-Erstellen Sie im Hauptverzeichnis eine neue Datei namens `.env`. Fügen Sie Ihre Supabase URL und den Key ein. **Die Namen MÜSSEN mit `VITE_` beginnen!**
+Erstellen Sie eine Datei namens `.env` im Hauptverzeichnis. **Die Namen MÜSSEN mit `VITE_` beginnen!**
 
 ```
 VITE_SUPABASE_URL=IHRE_SUPABASE_PROJEKT_URL
 VITE_SUPABASE_ANON_KEY=IHR_SUPABASE_ANON_KEY
 ```
 
-### 4.3. Lokalen Entwicklungsserver starten
+### 4.3. Lokalen Server starten
 Führen Sie `npm start` aus. Die App wird unter `http://localhost:5173` geöffnet.
 
-## 5. **KRITISCH: Projekt bereinigen**
-Ihr Projekt enthält veraltete Dateien, die zu Build-Fehlern führen. **Löschen Sie die folgenden Dateien und Ordner aus dem Hauptverzeichnis (root) Ihres Projekts**, falls sie existieren:
-- `App.tsx` (Datei)
-- `Auth.tsx` (Datei)
-- `Layout.tsx` (Datei)
-- `types.ts` (Datei)
-- `index.tsx` (Datei)
-- `components/` (der gesamte Ordner)
-- `services/` (der gesamte Ordner)
-
-**Alle korrekten Dateien befinden sich bereits im `src`-Verzeichnis.** Dieser Schritt ist entscheidend für den Erfolg.
-
-## 6. Schritt 3: Projekt auf GitHub hochladen
+## 5. Schritt 3: Projekt auf GitHub hochladen
 
 1.  Erstellen Sie ein neues, leeres Repository auf [github.com](https://github.com).
 2.  Führen Sie in Ihrem lokalen Projektordner aus:
     ```bash
     git init
     git add .
-    git commit -m "Initial commit of clean project structure"
+    git commit -m "Initial commit with user authentication"
     git remote add origin <IHRE_GITHUB_REPO_URL.git>
     git branch -M main
     git push -u origin main
     ```
 
-## 7. Schritt 4: Auf Netlify veröffentlichen (Hosting)
+## 6. Schritt 4: Auf Netlify veröffentlichen (Hosting)
 
 1.  Erstellen Sie ein Konto auf [netlify.com](https://netlify.com).
-2.  Wählen Sie **"Add new site"** -> **"Import an existing project"** und wählen Sie Ihr GitHub-Repo aus.
+2.  Wählen Sie **"Add new site"** -> **"Import an existing project"**.
 3.  Konfigurieren Sie die Build-Einstellungen:
     -   **Build command:** `npm run build`
     -   **Publish directory:** `dist`
 4.  **EXTREM WICHTIG: Umgebungsvariablen hinzufügen**
     -   Gehen Sie zu **Site configuration -> Build & deploy -> Environment variables**.
-    -   Fügen Sie die **gleichen zwei `VITE_` Variablen** wie in Ihrer `.env`-Datei hinzu. Es muss exakt so aussehen:
-        - Key: `VITE_SUPABASE_URL` | Value: `Ihre Supabase URL`
-        - Key: `VITE_SUPABASE_ANON_KEY` | Value: `Ihr Supabase Anon Key`
+    -   Fügen Sie die **gleichen zwei `VITE_` Variablen** wie in Ihrer `.env`-Datei hinzu.
 5.  Klicken Sie auf **"Deploy site"**.
 
-## 8. Anleitung zur Benutzung der App
+## 7. Anleitung zur Benutzung der App
 
-- **Fitness-Seite:** Fügen Sie Übungen zur Bibliothek hinzu und protokollieren Sie Trainingseinheiten.
-- **Ernährungs-Seite:** Fügen Sie Lebensmittel (manuell oder per Barcode-Scan) hinzu und protokollieren Sie Ihre Mahlzeiten.
-- **Settings-Seite:** Passen Sie Ihr globales Kalorienziel an und verfolgen Sie Ihr Gewicht.
-
-## 9. Verständnis der Projektstruktur
-
-```
-/
-├── public/             # Statische Assets
-│   └── _redirects      # WICHTIG: Routing-Regel für Netlify
-├── src/                # Der Quellcode Ihrer Anwendung
-│   ├── components/     # Alle React-Komponenten
-│   ├── services/       # Module für externe Dienste (Supabase)
-│   ├── App.tsx         # Hauptkomponente, steuert Routing
-│   ├── index.css       # Globale CSS-Datei
-│   ├── index.tsx       # Einstiegspunkt der React-Anwendung
-│   └── types.ts        # TypeScript-Typdefinitionen
-├── .env                # (Ihre lokale Datei) Geheime API-Schlüssel
-├── index.html          # Das Haupt-HTML-Template
-├── package.json        # Projektabhängigkeiten und Skripte
-└── README.md           # Diese Anleitung
-```
+- **Registrieren/Einloggen:** Erstellen Sie ein Konto oder melden Sie sich an.
+- **Fitness-Seite:** Fügen Sie Übungen zu Ihrer persönlichen Bibliothek hinzu und protokollieren Sie Ihre Trainingseinheiten.
+- **Ernährungs-Seite:** Fügen Sie Lebensmittel hinzu und protokollieren Sie Ihre Mahlzeiten.
+- **Profil-Seite:** Passen Sie Ihr persönliches Kalorienziel an und verfolgen Sie Ihr Gewicht.

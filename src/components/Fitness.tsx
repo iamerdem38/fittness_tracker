@@ -40,15 +40,21 @@ const Fitness: React.FC = () => {
     const [sets, setSets] = useState<{ weight: string, reps: string }[]>([{ weight: '', reps: '' }]);
 
     const fetchExercises = useCallback(async () => {
-        const { data, error } = await supabase.from('exercises').select('*');
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data, error } = await supabase.from('exercises').select('*').eq('user_id', user.id);
         if (error) console.error('Error fetching exercises', error);
         else setExercises(data || []);
     }, []);
 
     const fetchWorkouts = useCallback(async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
         const { data, error } = await supabase
             .from('workouts')
             .select('*, workout_sets(*, exercises(name))')
+            .eq('user_id', user.id);
+            
         if (error) console.error('Error fetching workouts', error);
         else {
             const formattedData = data.flatMap(w => 
@@ -72,10 +78,14 @@ const Fitness: React.FC = () => {
             toast.error("Exercise name cannot be empty.");
             return;
         }
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
         const { error } = await supabase.from('exercises').insert({
             name: newExerciseName,
             description: newExerciseDesc,
-            muscle_group: newExerciseMuscle
+            muscle_group: newExerciseMuscle,
+            user_id: user.id
         });
 
         if (error) {
@@ -103,6 +113,8 @@ const Fitness: React.FC = () => {
             toast.error('Please select an exercise.');
             return;
         }
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
 
         const formattedDate = format(selectedDate, 'yyyy-MM-dd');
         
@@ -110,6 +122,7 @@ const Fitness: React.FC = () => {
             .from('workouts')
             .select('id')
             .eq('workout_date', formattedDate)
+            .eq('user_id', user.id)
             .single();
 
         if (workoutError && workoutError.code !== 'PGRST116') { // PGRST116: no rows found
@@ -120,7 +133,7 @@ const Fitness: React.FC = () => {
         if (!workout) {
             const { data: newWorkout, error: newWorkoutError } = await supabase
                 .from('workouts')
-                .insert({ workout_date: formattedDate })
+                .insert({ workout_date: formattedDate, user_id: user.id })
                 .select('id')
                 .single();
             if (newWorkoutError) {
@@ -137,7 +150,8 @@ const Fitness: React.FC = () => {
                 exercise_id: parseInt(selectedExerciseId),
                 set_number: i + 1,
                 weight: parseFloat(s.weight),
-                reps: parseInt(s.reps)
+                reps: parseInt(s.reps),
+                user_id: user.id
             }));
             
         if (setsToInsert.length === 0) {
@@ -221,8 +235,8 @@ const Fitness: React.FC = () => {
             <div className="bg-base-200 p-4 rounded-lg">
                 <h2 className="text-xl font-bold mb-4">Exercise Library</h2>
                 <div className="max-h-60 overflow-y-auto">
-                    <table className="table w-full">
-                        <thead className="sticky top-0">
+                    <table className="table w-full table-zebra">
+                        <thead className="sticky top-0 bg-base-300">
                             <tr>
                                 <th>Name</th>
                                 <th>Muscle Group</th>
@@ -243,11 +257,11 @@ const Fitness: React.FC = () => {
             </div>
 
             {/* Workout Heatmap */}
-            <div className="bg-base-200 p-4 rounded-lg h-96">
+            <div className="bg-base-200 p-4 rounded-lg min-h-96">
                 <h2 className="text-xl font-bold mb-4">Workout History</h2>
                 {workouts.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                        <ScatterChart margin={{ top: 20, right: 20, bottom: 40, left: 100 }}>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <ScatterChart margin={{ top: 20, right: 20, bottom: 60, left: 100 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                             <XAxis 
                                 dataKey="date" 
@@ -256,6 +270,8 @@ const Fitness: React.FC = () => {
                                 tick={{ fill: '#9ca3af' }}
                                 angle={-45}
                                 textAnchor="end"
+                                height={80}
+                                interval={0}
                             />
                             <YAxis 
                                 dataKey="exercise" 

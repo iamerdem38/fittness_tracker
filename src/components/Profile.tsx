@@ -1,48 +1,58 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../services/supabase';
-import { AppSettings, WeightLog } from '../types';
+import { Profile as ProfileType, WeightLog } from '../types';
 import toast from 'react-hot-toast';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { format, parseISO } from 'date-fns';
 
 const Profile: React.FC = () => {
-    const [settings, setSettings] = useState<AppSettings | null>(null);
+    const [profile, setProfile] = useState<ProfileType | null>(null);
     const [calorieGoal, setCalorieGoal] = useState<number>(2000);
     const [currentWeight, setCurrentWeight] = useState<string>('');
     const [weightLog, setWeightLog] =useState<WeightLog[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const fetchSettings = useCallback(async () => {
-        const { data, error } = await supabase.from('settings').select('*').eq('id', 1).single();
+    const fetchProfile = useCallback(async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setLoading(false); return; }
+
+        const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+        
         if (error) {
-            console.error("Error fetching settings", error);
-            toast.error('Could not fetch app settings.');
+            console.error("Error fetching profile", error);
+            toast.error('Could not fetch your profile.');
         } else if (data) {
-            setSettings(data);
-            setCalorieGoal(data.calorie_goal);
+            setProfile(data);
+            setCalorieGoal(data.calorie_goal || 2000);
         }
+        setLoading(false);
     }, []);
 
     const fetchWeightLog = useCallback(async () => {
-        const { data, error } = await supabase.from('weight_log').select('*').order('log_date', { ascending: true });
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data, error } = await supabase.from('weight_log').select('*').eq('user_id', user.id).order('log_date', { ascending: true });
         if(error) console.error("Error fetching weight log", error);
         else setWeightLog(data || []);
     }, []);
 
-
     useEffect(() => {
-        fetchSettings();
+        fetchProfile();
         fetchWeightLog();
-    }, [fetchSettings, fetchWeightLog]);
+    }, [fetchProfile, fetchWeightLog]);
 
-    const handleUpdateSettings = async () => {
-        if (!settings) return;
+    const handleUpdateProfile = async () => {
+        if (!profile) return;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
         const { error } = await supabase
-            .from('settings')
+            .from('profiles')
             .update({ calorie_goal: calorieGoal })
-            .eq('id', 1);
+            .eq('id', user.id);
         
         if(error) toast.error(error.message);
-        else toast.success('Settings updated successfully!');
+        else toast.success('Profile updated successfully!');
     };
 
     const handleLogWeight = async () => {
@@ -50,9 +60,13 @@ const Profile: React.FC = () => {
             toast.error('Please enter your current weight.');
             return;
         }
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
         const { error } = await supabase.from('weight_log').insert({
             weight_kg: parseFloat(currentWeight),
-            log_date: format(new Date(), 'yyyy-MM-dd')
+            log_date: format(new Date(), 'yyyy-MM-dd'),
+            user_id: user.id
         });
 
         if(error) toast.error(error.message);
@@ -68,14 +82,19 @@ const Profile: React.FC = () => {
         weight: log.weight_kg
     }));
 
+    if (loading) {
+        return <div className="flex justify-center items-center h-full"><span className="loading loading-spinner loading-lg"></span></div>;
+    }
+
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold">Settings & Stats</h1>
+            <h1 className="text-3xl font-bold">Profile & Stats</h1>
+            <p className="text-gray-400">Welcome, {profile?.email || 'User'}</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Profile Settings */}
                 <div className="bg-base-200 p-6 rounded-lg">
-                    <h2 className="text-xl font-bold mb-4">App Settings</h2>
+                    <h2 className="text-xl font-bold mb-4">Your Settings</h2>
                     <div className="space-y-4">
                         <div className="form-control">
                             <label className="label" htmlFor="calorie-goal"><span className="label-text">Daily Calorie Goal</span></label>
@@ -87,8 +106,8 @@ const Profile: React.FC = () => {
                                 className="input input-bordered w-full"
                             />
                         </div>
-                        <button onClick={handleUpdateSettings} className="btn btn-primary">
-                            Update Settings
+                        <button onClick={handleUpdateProfile} className="btn btn-primary">
+                            Update Profile
                         </button>
                     </div>
                 </div>
@@ -116,10 +135,10 @@ const Profile: React.FC = () => {
             </div>
 
             {/* Weight Chart */}
-            <div className="bg-base-200 p-4 rounded-lg h-96">
+            <div className="bg-base-200 p-4 rounded-lg min-h-96">
                 <h2 className="text-xl font-bold mb-4">Weight Progress</h2>
                 {chartData.length > 1 ? (
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                             <XAxis dataKey="date" tick={{ fill: '#9ca3af' }} />

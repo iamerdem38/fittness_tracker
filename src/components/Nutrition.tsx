@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../services/supabase';
-import { FoodItem, FoodLog, AppSettings } from '../types';
+import { FoodItem, FoodLog, Profile } from '../types';
 import { Plus, ScanLine, X } from './Icons';
 import { fetchFoodProductByBarcode } from '../services/foodApi';
 import { Html5QrcodeScanner } from 'html5-qrcode';
@@ -49,7 +49,7 @@ const BarcodeScanner = ({ onScanSuccess, onScanError }: { onScanSuccess: (decode
 const Nutrition: React.FC = () => {
     const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
     const [foodLog, setFoodLog] = useState<FoodLog[]>([]);
-    const [settings, setSettings] = useState<AppSettings | null>(null);
+    const [profile, setProfile] = useState<Profile | null>(null);
     const [isAddFoodModalOpen, setAddFoodModalOpen] = useState(false);
     const [isLogFoodModalOpen, setLogFoodModalOpen] = useState(false);
     const [isScannerModalOpen, setScannerModalOpen] = useState(false);
@@ -61,30 +61,40 @@ const Nutrition: React.FC = () => {
     
     const [timeRange, setTimeRange] = useState(7);
 
-    const fetchSettings = useCallback(async () => {
-        const { data, error } = await supabase.from('settings').select('*').eq('id', 1).single();
-        if (error) console.error("Error fetching settings", error);
-        else setSettings(data);
+    const fetchProfile = useCallback(async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+        if (error) console.error("Error fetching profile", error);
+        else setProfile(data);
     }, []);
 
     const fetchFoodItems = useCallback(async () => {
-        const { data, error } = await supabase.from('food_items').select('*');
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data, error } = await supabase.from('food_items').select('*').eq('user_id', user.id);
         if (error) console.error('Error fetching food items', error);
         else setFoodItems(data || []);
     }, []);
 
     const fetchFoodLog = useCallback(async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
         const startDate = format(subDays(new Date(), timeRange), 'yyyy-MM-dd');
-        const { data, error } = await supabase.from('food_log').select('*, food_items(*)').gte('log_date', startDate);
+        const { data, error } = await supabase
+            .from('food_log')
+            .select('*, food_items(*)')
+            .eq('user_id', user.id)
+            .gte('log_date', startDate);
         if (error) console.error('Error fetching food log', error);
-        else setFoodLog(data || []);
+        else setFoodLog(data as any[] || []);
     }, [timeRange]);
 
     useEffect(() => {
-        fetchSettings();
+        fetchProfile();
         fetchFoodItems();
         fetchFoodLog();
-    }, [fetchSettings, fetchFoodItems, fetchFoodLog]);
+    }, [fetchProfile, fetchFoodItems, fetchFoodLog]);
 
     const onScanSuccess = async (decodedText: string) => {
         setScannerModalOpen(false);
@@ -114,7 +124,10 @@ const Nutrition: React.FC = () => {
             toast.error('Food name is required.');
             return;
         }
-        const { error } = await supabase.from('food_items').insert(newFood);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { error } = await supabase.from('food_items').insert({...newFood, user_id: user.id});
         if (error) {
             toast.error(error.message);
         } else {
@@ -130,10 +143,14 @@ const Nutrition: React.FC = () => {
             toast.error('Please select a food and enter quantity.');
             return;
         }
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
         const { error } = await supabase.from('food_log').insert({
             food_item_id: parseInt(selectedFoodId),
             quantity_g: parseFloat(quantity),
-            log_date: format(selectedDate, 'yyyy-MM-dd')
+            log_date: format(selectedDate, 'yyyy-MM-dd'),
+            user_id: user.id
         });
         if (error) {
             toast.error(error.message);
@@ -148,8 +165,8 @@ const Nutrition: React.FC = () => {
 
     const calorieData = foodLog.reduce((acc, log) => {
         const date = log.log_date;
-        if (!log.food_item) return acc;
-        const calories = ((log.food_item.calories || 0) / (log.food_item.serving_size_g || 100)) * log.quantity_g;
+        if (!log.food_items) return acc;
+        const calories = ((log.food_items.calories || 0) / (log.food_items.serving_size_g || 100)) * log.quantity_g;
         acc[date] = (acc[date] || 0) + calories;
         return acc;
     }, {} as Record<string, number>);
@@ -220,7 +237,7 @@ const Nutrition: React.FC = () => {
             </Modal>
 
             {/* Daily Calories Chart */}
-            <div className="bg-base-200 p-4 rounded-lg h-96">
+            <div className="bg-base-200 p-4 rounded-lg min-h-96">
                  <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold">Daily Calorie Intake</h2>
                     <select value={timeRange} onChange={e => setTimeRange(parseInt(e.target.value))} className="select select-bordered">
@@ -230,7 +247,7 @@ const Nutrition: React.FC = () => {
                     </select>
                  </div>
                  {chartData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                             <XAxis dataKey="date" tick={{ fill: '#9ca3af' }} />
@@ -238,8 +255,8 @@ const Nutrition: React.FC = () => {
                             <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />
                             <Legend />
                             <Bar dataKey="calories" fill="#3b82f6" name="Total Calories" />
-                            {settings?.calorie_goal && (
-                                <ReferenceLine y={settings.calorie_goal} label={{ value: 'Goal', fill: '#f59e0b', position: 'insideTopLeft' }} stroke="#f59e0b" strokeDasharray="3 3" />
+                            {profile?.calorie_goal && (
+                                <ReferenceLine y={profile.calorie_goal} label={{ value: 'Goal', fill: '#f59e0b', position: 'insideTopLeft' }} stroke="#f59e0b" strokeDasharray="3 3" />
                             )}
                         </BarChart>
                     </ResponsiveContainer>
