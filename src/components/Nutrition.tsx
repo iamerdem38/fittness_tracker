@@ -2,18 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../services/supabase';
 import { FoodItem, FoodLog, Profile } from '../types';
 import { Plus, ScanLine, X } from './Icons';
-<<<<<<< HEAD
 import { fetchFoodProductByBarcode } from '../services/foodApi';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import toast from 'react-hot-toast';
 import { DayPicker } from 'react-day-picker';
-=======
-import { fetchFoodProductByBarcode, FoodProduct } from '../services/foodApi';
-import { Html5QrcodeScanner } from 'html5-qrcode';
-import toast from 'react-hot-toast';
-import { DayPicker } from 'react-day-picker';
-import 'react-day-picker/dist/style.css';
->>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
 import { format, subDays, parseISO } from 'date-fns';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine } from 'recharts';
 
@@ -24,11 +16,7 @@ const Modal = ({ isOpen, onClose, children, title }: { isOpen: boolean, onClose:
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
             <div className="bg-base-200 rounded-lg p-6 w-full max-w-lg relative">
                 <h3 className="text-lg font-bold mb-4">{title}</h3>
-<<<<<<< HEAD
                 <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">
-=======
-                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white">
->>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
                     <X size={24} />
                 </button>
                 {children}
@@ -66,14 +54,7 @@ const Nutrition: React.FC = () => {
     const [isLogFoodModalOpen, setLogFoodModalOpen] = useState(false);
     const [isScannerModalOpen, setScannerModalOpen] = useState(false);
     
-<<<<<<< HEAD
     const [newFood, setNewFood] = useState<Partial<FoodItem>>({});
-=======
-    // States for Add Food Modal
-    const [newFood, setNewFood] = useState<Partial<FoodItem>>({});
-
-    // States for Log Food Modal
->>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
     const [selectedFoodId, setSelectedFoodId] = useState<string>('');
     const [quantity, setQuantity] = useState<string>('');
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -182,16 +163,11 @@ const Nutrition: React.FC = () => {
         calories: Math.round(Number(calories))
     })).sort((a, b) => parseISO(a.originalDate).getTime() - parseISO(b.originalDate).getTime());
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold">Nutrition</h1>
                 <div className="flex space-x-2">
-<<<<<<< HEAD
                     <button onClick={() => setLogFoodModalOpen(true)} className="btn btn-primary text-primary-content flex items-center">
                         <Plus className="mr-2" size={20} /> Log Food
                     </button>
@@ -199,15 +175,6 @@ const Nutrition: React.FC = () => {
                         <Plus className="mr-2" size={20} /> Add Food Item
                     </button>
                     <button onClick={() => setScannerModalOpen(true)} className="btn btn-accent text-accent-content flex items-center">
-=======
-                    <button onClick={() => setLogFoodModalOpen(true)} className="btn btn-primary text-white font-bold py-2 px-4 rounded-lg flex items-center">
-                        <Plus className="mr-2" size={20} /> Log Food
-                    </button>
-                    <button onClick={() => { setNewFood({}); setAddFoodModalOpen(true); }} className="btn btn-secondary text-white font-bold py-2 px-4 rounded-lg flex items-center">
-                        <Plus className="mr-2" size={20} /> Add Food Item
-                    </button>
-                    <button onClick={() => setScannerModalOpen(true)} className="btn btn-accent text-white font-bold py-2 px-4 rounded-lg flex items-center">
->>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
                         <ScanLine className="mr-2" size={20} /> Scan Barcode
                     </button>
                 </div>
@@ -216,7 +183,6 @@ const Nutrition: React.FC = () => {
             {/* Log Food Modal */}
             <Modal isOpen={isLogFoodModalOpen} onClose={() => setLogFoodModalOpen(false)} title="Log Food Intake">
                  <div className="space-y-4">
-<<<<<<< HEAD
                      <div className="flex justify-center bg-base-300 rounded-lg p-2">
                         <DayPicker mode="single" selected={selectedDate} onSelect={(date) => date && setSelectedDate(date)} />
                     </div>
@@ -226,56 +192,28 @@ const Nutrition: React.FC = () => {
                             value={selectedFoodId}
                             onChange={(e) => setSelectedFoodId(e.target.value)}
                             className="select select-bordered w-full"
-=======
-                     <div className="flex justify-center">
-                        <DayPicker mode="single" selected={selectedDate} onSelect={(date) => date && setSelectedDate(date)} />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium">Food Item</label>
-                        <select
-                            value={selectedFoodId}
-                            onChange={(e) => setSelectedFoodId(e.target.value)}
-                            className="mt-1 block w-full select select-bordered"
->>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
                         >
                             <option value="">Select a food</option>
                             {foodItems.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
                         </select>
                     </div>
-<<<<<<< HEAD
                     <div className="form-control">
                         <label className="label"><span className="label-text">Quantity (grams)</span></label>
                         <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="e.g., 200" className="input input-bordered w-full" />
                     </div>
                     <button onClick={handleLogFood} className="btn btn-primary w-full">Log Food</button>
-=======
-                    <div>
-                        <label className="block text-sm font-medium">Quantity (grams)</label>
-                        <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="e.g., 200" className="input input-bordered w-full mt-1" />
-                    </div>
-                    <button onClick={handleLogFood} className="w-full btn btn-primary text-white font-bold py-2 px-4 rounded-lg">Log Food</button>
->>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
                  </div>
             </Modal>
             
             {/* Add Food Modal */}
             <Modal isOpen={isAddFoodModalOpen} onClose={() => setAddFoodModalOpen(false)} title="Add Food to Library">
                 <div className="grid grid-cols-2 gap-4">
-<<<<<<< HEAD
                     <input type="text" placeholder="Name" value={newFood.name || ''} onChange={(e) => setNewFood({...newFood, name: e.target.value})} className="input input-bordered col-span-2" />
                     <input type="number" placeholder="Calories per 100g" value={newFood.calories || ''} onChange={(e) => setNewFood({...newFood, calories: parseFloat(e.target.value)})} className="input input-bordered" />
                     <input type="number" placeholder="Protein per 100g" value={newFood.protein || ''} onChange={(e) => setNewFood({...newFood, protein: parseFloat(e.target.value)})} className="input input-bordered" />
                     <input type="number" placeholder="Carbs per 100g" value={newFood.carbs || ''} onChange={(e) => setNewFood({...newFood, carbs: parseFloat(e.target.value)})} className="input input-bordered" />
                     <input type="number" placeholder="Fat per 100g" value={newFood.fat || ''} onChange={(e) => setNewFood({...newFood, fat: parseFloat(e.target.value)})} className="input input-bordered" />
                     <button onClick={handleAddFoodItem} className="btn btn-primary col-span-2">Add Food</button>
-=======
-                    <input type="text" placeholder="Name" value={newFood.name || ''} onChange={(e) => setNewFood({...newFood, name: e.target.value})} className="input input-bordered w-full col-span-2" />
-                    <input type="number" placeholder="Calories per 100g" value={newFood.calories || ''} onChange={(e) => setNewFood({...newFood, calories: parseFloat(e.target.value)})} className="input input-bordered w-full" />
-                    <input type="number" placeholder="Protein per 100g" value={newFood.protein || ''} onChange={(e) => setNewFood({...newFood, protein: parseFloat(e.target.value)})} className="input input-bordered w-full" />
-                    <input type="number" placeholder="Carbs per 100g" value={newFood.carbs || ''} onChange={(e) => setNewFood({...newFood, carbs: parseFloat(e.target.value)})} className="input input-bordered w-full" />
-                    <input type="number" placeholder="Fat per 100g" value={newFood.fat || ''} onChange={(e) => setNewFood({...newFood, fat: parseFloat(e.target.value)})} className="input input-bordered w-full" />
-                    <button onClick={handleAddFoodItem} className="w-full btn btn-primary text-white font-bold py-2 px-4 rounded-lg col-span-2">Add Food</button>
->>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
                 </div>
             </Modal>
             
@@ -314,8 +252,4 @@ const Nutrition: React.FC = () => {
     );
 };
 
-<<<<<<< HEAD
 export default Nutrition;
-=======
-export default Nutrition;
->>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
