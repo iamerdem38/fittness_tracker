@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../services/supabase';
-import { FoodItem, FoodLog, Profile } from '../types';
+import { FoodItem, FoodLog, AppSettings } from '../types';
 import { Plus, ScanLine, X } from './Icons';
 import { fetchFoodProductByBarcode } from '../services/foodApi';
 import { Html5QrcodeScanner } from 'html5-qrcode';
@@ -49,7 +49,7 @@ const BarcodeScanner = ({ onScanSuccess, onScanError }: { onScanSuccess: (decode
 const Nutrition: React.FC = () => {
     const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
     const [foodLog, setFoodLog] = useState<FoodLog[]>([]);
-    const [profile, setProfile] = useState<Profile | null>(null);
+    const [settings, setSettings] = useState<AppSettings | null>(null);
     const [isAddFoodModalOpen, setAddFoodModalOpen] = useState(false);
     const [isLogFoodModalOpen, setLogFoodModalOpen] = useState(false);
     const [isScannerModalOpen, setScannerModalOpen] = useState(false);
@@ -61,13 +61,10 @@ const Nutrition: React.FC = () => {
     
     const [timeRange, setTimeRange] = useState(7);
 
-    const fetchProfile = useCallback(async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-            const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-            if (error) console.error("Error fetching profile", error);
-            else setProfile(data);
-        }
+    const fetchSettings = useCallback(async () => {
+        const { data, error } = await supabase.from('settings').select('*').eq('id', 1).single();
+        if (error) console.error("Error fetching settings", error);
+        else setSettings(data);
     }, []);
 
     const fetchFoodItems = useCallback(async () => {
@@ -84,10 +81,10 @@ const Nutrition: React.FC = () => {
     }, [timeRange]);
 
     useEffect(() => {
-        fetchProfile();
+        fetchSettings();
         fetchFoodItems();
         fetchFoodLog();
-    }, [fetchProfile, fetchFoodItems, fetchFoodLog]);
+    }, [fetchSettings, fetchFoodItems, fetchFoodLog]);
 
     const onScanSuccess = async (decodedText: string) => {
         setScannerModalOpen(false);
@@ -241,8 +238,8 @@ const Nutrition: React.FC = () => {
                             <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />
                             <Legend />
                             <Bar dataKey="calories" fill="#3b82f6" name="Total Calories" />
-                            {profile?.calorie_goal && (
-                                <ReferenceLine y={profile.calorie_goal} label={{ value: 'Goal', fill: '#f59e0b', position: 'insideTopLeft' }} stroke="#f59e0b" strokeDasharray="3 3" />
+                            {settings?.calorie_goal && (
+                                <ReferenceLine y={settings.calorie_goal} label={{ value: 'Goal', fill: '#f59e0b', position: 'insideTopLeft' }} stroke="#f59e0b" strokeDasharray="3 3" />
                             )}
                         </BarChart>
                     </ResponsiveContainer>
