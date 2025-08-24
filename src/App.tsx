@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from './services/supabase';
 import Layout from './components/Layout';
@@ -50,7 +50,7 @@ const App: React.FC = () => {
           },
         }}
       />
-      <HashRouter>
+      <BrowserRouter>
         {!session ? (
           <Routes>
             <Route path="/auth" element={<Auth />} />
@@ -66,7 +66,7 @@ const App: React.FC = () => {
             </Routes>
           </Layout>
         )}
-      </HashRouter>
+      </BrowserRouter>
     </>
   );
 };

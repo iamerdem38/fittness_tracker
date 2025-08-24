@@ -173,7 +173,8 @@ Jetzt, da das Backend bereit ist, konfigurieren wir das Frontend auf Ihrem Compu
 ### 4.2. Umgebungsvariablen erstellen
 Die API-Schlüssel sollten niemals direkt im Code stehen. Wir speichern sie in einer speziellen Datei, die nicht auf GitHub hochgeladen wird.
 1.  Erstellen Sie im Hauptverzeichnis des Projekts (auf der gleichen Ebene wie `package.json`) eine neue Datei mit dem Namen `.env`.
-2.  Fügen Sie die Supabase URL und den Key ein, die Sie in Schritt 3.3 kopiert haben. **WICHTIG:** Die Variablennamen müssen mit `VITE_` beginnen!
+2.  Fügen Sie die Supabase URL und den Key ein, die Sie in Schritt 3.3 kopiert haben.
+    **ACHTUNG: Dieses Projekt verwendet Vite. Die Variablennamen MÜSSEN mit `VITE_` beginnen!**
 
     ```
     VITE_SUPABASE_URL=IHRE_SUPABASE_PROJEKT_URL
@@ -217,9 +218,9 @@ Netlify ist eine fantastische Plattform, um Frontend-Anwendungen kostenlos und e
     -   **Base directory:** (leer lassen)
     -   **Build command:** `npm run build`
     -   **Publish directory:** `dist`
-6.  **SEHR WICHTIG: Umgebungsvariablen hinzufügen**
+6.  **EXTREM WICHTIG: Umgebungsvariablen hinzufügen**
     -   Klicken Sie auf **"Show advanced"** und dann auf **"New variable"**.
-    -   Fügen Sie die **gleichen zwei Variablen** wie in Ihrer `.env`-Datei hinzu (mit `VITE_` Präfix). Netlify braucht diese, um während des Build-Prozesses eine Verbindung zu Supabase herstellen zu können.
+    -   Fügen Sie die **gleichen zwei Variablen** wie in Ihrer `.env`-Datei hinzu. **Die Namen müssen exakt übereinstimmen und das `VITE_` Präfix enthalten!**
         -   **Key:** `VITE_SUPABASE_URL`, **Value:** `IHRE_SUPABASE_PROJEKT_URL`
         -   **Key:** `VITE_SUPABASE_ANON_KEY`, **Value:** `IHR_SUPABASE_ANON_KEY`
 7.  Klicken Sie auf **"Deploy site"**. Netlify wird nun Ihren Code von GitHub herunterladen, die App bauen und sie auf einer einzigartigen URL (z.B. `irgendwas-zufälliges-12345.netlify.app`) veröffentlichen.
@@ -244,7 +245,8 @@ Netlify ist eine fantastische Plattform, um Frontend-Anwendungen kostenlos und e
 
 ```
 /
-├── public/             # Statische Assets (z.B. Favicon)
+├── public/             # Statische Assets (Favicon, _redirects)
+│   └── _redirects      # WICHTIG: Leitet alle Anfragen an index.html für React Router um
 ├── src/                # Der Quellcode Ihrer Anwendung
 │   ├── components/     # Alle React-Komponenten (Seiten, Modals, etc.)
 │   ├── services/       # Module für externe Dienste (Supabase, API)
