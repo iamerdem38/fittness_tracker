@@ -7,5 +7,6 @@ export {
     Trash2, 
     X, 
     ScanLine,
-    ArrowUp
+    ArrowUp,
+    Menu
 } from 'lucide-react';

@@ -11,8 +11,8 @@ import { ResponsiveContainer, ScatterChart, XAxis, YAxis, ZAxis, Scatter, Toolti
 const Modal = ({ isOpen, onClose, children, title }: { isOpen: boolean, onClose: () => void, children: React.ReactNode, title: string }) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-            <div className="bg-base-200 rounded-lg p-6 w-full max-w-lg relative">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-base-200 rounded-lg p-6 w-full max-w-lg relative max-h-[90vh] overflow-y-auto">
                 <h3 className="text-lg font-bold mb-4">{title}</h3>
                 <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">
                     <X size={24} />
@@ -30,12 +30,10 @@ const Fitness: React.FC = () => {
     const [isExerciseModalOpen, setExerciseModalOpen] = useState(false);
     const [isWorkoutModalOpen, setWorkoutModalOpen] = useState(false);
     
-    // States for Exercise Modal
     const [newExerciseName, setNewExerciseName] = useState('');
     const [newExerciseDesc, setNewExerciseDesc] = useState('');
     const [newExerciseMuscle, setNewExerciseMuscle] = useState('');
 
-    // States for Workout Log Modal
     const [selectedExerciseId, setSelectedExerciseId] = useState<string>('');
     const [sets, setSets] = useState<{ weight: string, reps: string }[]>([{ weight: '', reps: '' }]);
 
@@ -61,7 +59,7 @@ const Fitness: React.FC = () => {
                 w.workout_sets.map((s: any) => ({
                     date: w.workout_date,
                     exercise: s.exercises.name,
-                    value: 1 // for heatmap color
+                    value: 1
                 }))
             );
             setWorkouts(formattedData);
@@ -125,7 +123,7 @@ const Fitness: React.FC = () => {
             .eq('user_id', user.id)
             .single();
 
-        if (workoutError && workoutError.code !== 'PGRST116') { // PGRST116: no rows found
+        if (workoutError && workoutError.code !== 'PGRST116') {
              toast.error(`Error finding workout: ${workoutError.message}`);
              return;
         }
@@ -176,19 +174,18 @@ const Fitness: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row justify-between md:items-center space-y-4 md:space-y-0">
                 <h1 className="text-3xl font-bold">Fitness</h1>
-                <div className="flex space-x-2">
-                    <button onClick={() => setWorkoutModalOpen(true)} className="btn btn-primary text-primary-content flex items-center">
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                    <button onClick={() => setWorkoutModalOpen(true)} className="btn btn-primary text-primary-content flex items-center justify-center">
                         <Plus className="mr-2" size={20} /> Log Workout
                     </button>
-                    <button onClick={() => setExerciseModalOpen(true)} className="btn btn-secondary text-secondary-content flex items-center">
+                    <button onClick={() => setExerciseModalOpen(true)} className="btn btn-secondary text-secondary-content flex items-center justify-center">
                         <Plus className="mr-2" size={20} /> Add Exercise
                     </button>
                 </div>
             </div>
 
-            {/* Workout Logger Modal */}
             <Modal isOpen={isWorkoutModalOpen} onClose={() => setWorkoutModalOpen(false)} title="Log a new Workout">
                 <div className="space-y-4">
                     <div className="flex justify-center bg-base-300 rounded-lg p-2">
@@ -208,8 +205,8 @@ const Fitness: React.FC = () => {
                     <div className="form-control">
                         <label className="label"><span className="label-text">Sets</span></label>
                         {sets.map((set, index) => (
-                            <div key={index} className="flex items-center space-x-2 mt-2">
-                                <span className="w-12 text-center font-semibold">Set {index + 1}</span>
+                            <div key={index} className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 mt-2">
+                                <span className="w-full sm:w-12 text-center font-semibold">Set {index + 1}</span>
                                 <input type="number" placeholder="Weight (kg)" value={set.weight} onChange={(e) => handleSetChange(index, 'weight', e.target.value)} className="input input-bordered w-full" />
                                 <input type="number" placeholder="Reps" value={set.reps} onChange={(e) => handleSetChange(index, 'reps', e.target.value)} className="input input-bordered w-full" />
                                 <button onClick={() => handleRemoveSet(index)} className="btn btn-ghost btn-square text-error"><Trash2 size={18} /></button>
@@ -221,7 +218,6 @@ const Fitness: React.FC = () => {
                 </div>
             </Modal>
             
-            {/* Exercise Library Modal */}
              <Modal isOpen={isExerciseModalOpen} onClose={() => setExerciseModalOpen(false)} title="Add a new Exercise">
                 <div className="space-y-4">
                     <input type="text" placeholder="Exercise Name" value={newExerciseName} onChange={(e) => setNewExerciseName(e.target.value)} className="input input-bordered w-full" />
@@ -231,7 +227,6 @@ const Fitness: React.FC = () => {
                 </div>
             </Modal>
 
-            {/* Exercise List */}
             <div className="bg-base-200 p-4 rounded-lg">
                 <h2 className="text-xl font-bold mb-4">Exercise Library</h2>
                 <div className="max-h-60 overflow-y-auto">
@@ -240,7 +235,7 @@ const Fitness: React.FC = () => {
                             <tr>
                                 <th>Name</th>
                                 <th>Muscle Group</th>
-                                <th>Description</th>
+                                <th className="hidden md:table-cell">Description</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -248,7 +243,7 @@ const Fitness: React.FC = () => {
                                 <tr key={ex.id} className="hover">
                                     <td>{ex.name}</td>
                                     <td>{ex.muscle_group}</td>
-                                    <td>{ex.description}</td>
+                                    <td className="hidden md:table-cell">{ex.description}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -256,12 +251,11 @@ const Fitness: React.FC = () => {
                 </div>
             </div>
 
-            {/* Workout Heatmap */}
             <div className="bg-base-200 p-4 rounded-lg min-h-96">
                 <h2 className="text-xl font-bold mb-4">Workout History</h2>
                 {workouts.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
-                        <ScatterChart margin={{ top: 20, right: 20, bottom: 60, left: 100 }}>
+                        <ScatterChart margin={{ top: 20, right: 20, bottom: 60, left: 10 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                             <XAxis 
                                 dataKey="date" 
@@ -279,7 +273,7 @@ const Fitness: React.FC = () => {
                                 type="category" 
                                 ticks={uniqueExercises} 
                                 tick={{ fill: '#9ca3af' }}
-                                width={120}
+                                width={100}
                             />
                             <ZAxis dataKey="value" range={[100, 100]} />
                             <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151' }} />

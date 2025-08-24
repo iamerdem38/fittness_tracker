@@ -13,8 +13,8 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 const Modal = ({ isOpen, onClose, children, title }: { isOpen: boolean, onClose: () => void, children: React.ReactNode, title: string }) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-            <div className="bg-base-200 rounded-lg p-6 w-full max-w-lg relative">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-base-200 rounded-lg p-6 w-full max-w-lg relative max-h-[90vh] overflow-y-auto">
                 <h3 className="text-lg font-bold mb-4">{title}</h3>
                 <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">
                     <X size={24} />
@@ -25,7 +25,6 @@ const Modal = ({ isOpen, onClose, children, title }: { isOpen: boolean, onClose:
     );
 };
 
-// BarcodeScanner Component
 const BarcodeScanner = ({ onScanSuccess, onScanError }: { onScanSuccess: (decodedText: string) => void, onScanError: (errorMessage: string) => void }) => {
     useEffect(() => {
         const scanner = new Html5QrcodeScanner(
@@ -34,12 +33,15 @@ const BarcodeScanner = ({ onScanSuccess, onScanError }: { onScanSuccess: (decode
             false
         );
 
-        scanner.render(onScanSuccess, onScanError);
+        const successCallback = (decodedText: string, decodedResult: any) => {
+            onScanSuccess(decodedText);
+            scanner.clear().catch(error => console.error("Failed to clear scanner on success.", error));
+        };
+
+        scanner.render(successCallback, onScanError);
 
         return () => {
-            scanner.clear().catch(error => {
-                console.error("Failed to clear html5QrcodeScanner.", error);
-            });
+             scanner.clear().catch(error => { /* Ignore cleanup errors */ });
         };
     }, [onScanSuccess, onScanError]);
 
@@ -179,22 +181,21 @@ const Nutrition: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row justify-between md:items-center space-y-4 md:space-y-0">
                 <h1 className="text-3xl font-bold">Nutrition</h1>
-                <div className="flex space-x-2">
-                    <button onClick={() => setLogFoodModalOpen(true)} className="btn btn-primary text-primary-content flex items-center">
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                    <button onClick={() => setLogFoodModalOpen(true)} className="btn btn-primary text-primary-content flex items-center justify-center">
                         <Plus className="mr-2" size={20} /> Log Food
                     </button>
-                    <button onClick={() => { setNewFood({}); setAddFoodModalOpen(true); }} className="btn btn-secondary text-secondary-content flex items-center">
+                    <button onClick={() => { setNewFood({}); setAddFoodModalOpen(true); }} className="btn btn-secondary text-secondary-content flex items-center justify-center">
                         <Plus className="mr-2" size={20} /> Add Food Item
                     </button>
-                    <button onClick={() => setScannerModalOpen(true)} className="btn btn-accent text-accent-content flex items-center">
+                    <button onClick={() => setScannerModalOpen(true)} className="btn btn-accent text-accent-content flex items-center justify-center">
                         <ScanLine className="mr-2" size={20} /> Scan Barcode
                     </button>
                 </div>
             </div>
 
-            {/* Log Food Modal */}
             <Modal isOpen={isLogFoodModalOpen} onClose={() => setLogFoodModalOpen(false)} title="Log Food Intake">
                  <div className="space-y-4">
                      <div className="flex justify-center bg-base-300 rounded-lg p-2">
@@ -219,28 +220,25 @@ const Nutrition: React.FC = () => {
                  </div>
             </Modal>
             
-            {/* Add Food Modal */}
             <Modal isOpen={isAddFoodModalOpen} onClose={() => setAddFoodModalOpen(false)} title="Add Food to Library">
-                <div className="grid grid-cols-2 gap-4">
-                    <input type="text" placeholder="Name" value={newFood.name || ''} onChange={(e) => setNewFood({...newFood, name: e.target.value})} className="input input-bordered col-span-2" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input type="text" placeholder="Name" value={newFood.name || ''} onChange={(e) => setNewFood({...newFood, name: e.target.value})} className="input input-bordered col-span-1 sm:col-span-2" />
                     <input type="number" placeholder="Calories per 100g" value={newFood.calories || ''} onChange={(e) => setNewFood({...newFood, calories: parseFloat(e.target.value)})} className="input input-bordered" />
                     <input type="number" placeholder="Protein per 100g" value={newFood.protein || ''} onChange={(e) => setNewFood({...newFood, protein: parseFloat(e.target.value)})} className="input input-bordered" />
                     <input type="number" placeholder="Carbs per 100g" value={newFood.carbs || ''} onChange={(e) => setNewFood({...newFood, carbs: parseFloat(e.target.value)})} className="input input-bordered" />
                     <input type="number" placeholder="Fat per 100g" value={newFood.fat || ''} onChange={(e) => setNewFood({...newFood, fat: parseFloat(e.target.value)})} className="input input-bordered" />
-                    <button onClick={handleAddFoodItem} className="btn btn-primary col-span-2">Add Food</button>
+                    <button onClick={handleAddFoodItem} className="btn btn-primary col-span-1 sm:col-span-2">Add Food</button>
                 </div>
             </Modal>
             
-            {/* Barcode Scanner Modal */}
             <Modal isOpen={isScannerModalOpen} onClose={() => setScannerModalOpen(false)} title="Scan Barcode">
                 <BarcodeScanner onScanSuccess={onScanSuccess} onScanError={(err) => { /* console.log(err) */ }} />
             </Modal>
 
-            {/* Daily Calories Chart */}
             <div className="bg-base-200 p-4 rounded-lg min-h-96">
-                 <div className="flex justify-between items-center mb-4">
+                 <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 space-y-2 sm:space-y-0">
                     <h2 className="text-xl font-bold">Daily Calorie Intake</h2>
-                    <select value={timeRange} onChange={e => setTimeRange(parseInt(e.target.value))} className="select select-bordered">
+                    <select value={timeRange} onChange={e => setTimeRange(parseInt(e.target.value))} className="select select-bordered w-full sm:w-auto">
                         <option value={7}>Last 7 Days</option>
                         <option value={30}>Last 30 Days</option>
                         <option value={90}>Last 90 Days</option>
@@ -248,7 +246,7 @@ const Nutrition: React.FC = () => {
                  </div>
                  {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                        <BarChart data={chartData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                             <XAxis dataKey="date" tick={{ fill: '#9ca3af' }} />
                             <YAxis tick={{ fill: '#9ca3af' }} />

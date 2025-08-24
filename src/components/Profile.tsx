@@ -92,7 +92,6 @@ const Profile: React.FC = () => {
             <p className="text-gray-400">Welcome, {profile?.email || 'User'}</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Profile Settings */}
                 <div className="bg-base-200 p-6 rounded-lg">
                     <h2 className="text-xl font-bold mb-4">Your Settings</h2>
                     <div className="space-y-4">
@@ -112,7 +111,6 @@ const Profile: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Weight Logging */}
                 <div className="bg-base-200 p-6 rounded-lg">
                     <h2 className="text-xl font-bold mb-4">Log Your Weight</h2>
                     <div className="space-y-4">
@@ -134,12 +132,11 @@ const Profile: React.FC = () => {
                 </div>
             </div>
 
-            {/* Weight Chart */}
             <div className="bg-base-200 p-4 rounded-lg min-h-96">
                 <h2 className="text-xl font-bold mb-4">Weight Progress</h2>
                 {chartData.length > 1 ? (
                     <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                        <LineChart data={chartData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                             <XAxis dataKey="date" tick={{ fill: '#9ca3af' }} />
                             <YAxis domain={['dataMin - 2', 'dataMax + 2']} tick={{ fill: '#9ca3af' }} />

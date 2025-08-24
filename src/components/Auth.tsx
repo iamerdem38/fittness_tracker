@@ -19,13 +19,13 @@ const Auth: React.FC = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success(isLogin ? 'Successfully logged in!' : 'Check your email for the login link!');
+      toast.success(isLogin ? 'Successfully logged in!' : 'Check your email for the confirmation link!');
     }
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-base-200">
+    <div className="min-h-screen flex items-center justify-center bg-base-200 p-4">
       <div className="w-full max-w-md p-8 space-y-8 bg-base-100 rounded-xl shadow-lg">
         <div>
           <h2 className="text-center text-3xl font-extrabold text-base-content">
@@ -58,7 +58,7 @@ const Auth: React.FC = () => {
               autoComplete="current-password"
               required
               className="input input-bordered w-full"
-              placeholder="Password"
+              placeholder="Password (min. 6 characters)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
