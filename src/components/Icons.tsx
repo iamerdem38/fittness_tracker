@@ -12,5 +12,8 @@ export {
     ScanLine,
     Search,
     Filter,
-    ArrowRight
+    ArrowRight,
+    ChevronsLeft,
+    ChevronsRight,
+    Menu,
 } from 'lucide-react';
