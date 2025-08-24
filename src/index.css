@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom day picker styles for dark mode */
+.rdp {
+    --rdp-cell-size: 40px;
+    --rdp-accent-color: #10b981;
+    --rdp-background-color: #059669;
+    --rdp-outline: 2px solid var(--rdp-accent-color);
+    --rdp-border-radius: 6px;
+    
+    margin: 1em 0;
+}
+
+.rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover {
+    background-color: var(--rdp-accent-color) !important;
+    color: white !important;
+}
+.rdp-day_today {
+    color: #f59e0b !important;
+    font-weight: bold;
+}
+.rdp-caption_label {
+    color: var(--rdp-accent-color);
+}
