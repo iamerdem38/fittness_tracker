@@ -6,14 +6,6 @@ export {
     Plus, 
     Trash2, 
     X, 
-    Calendar as CalendarIcon, 
-    ChevronLeft, 
-    ChevronRight,
     ScanLine,
-    Search,
-    Filter,
-    ArrowRight,
-    ChevronsLeft,
-    ChevronsRight,
-    Menu,
+    ArrowUp
 } from 'lucide-react';
