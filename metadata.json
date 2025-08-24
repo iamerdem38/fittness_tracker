@@ -1,0 +1,7 @@
+{
+  "name": "FitTrack All-in-One",
+  "description": "An all-in-one web application to track your fitness workouts, nutrition, and personal stats like weight. Features workout logging, an extensive exercise library, food tracking with barcode scanning, and insightful charts to visualize your progress.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
