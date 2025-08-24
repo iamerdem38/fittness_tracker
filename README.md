@@ -9,10 +9,11 @@ Willkommen bei FitTrack! Dies ist eine umfassende Anleitung, die Sie durch den g
 2.  [Voraussetzungen](#2-voraussetzungen)
 3.  [Schritt 1: Supabase einrichten (Backend & Datenbank)](#3-schritt-1-supabase-einrichten-backend--datenbank)
 4.  [Schritt 2: Projekt lokal einrichten (Frontend)](#4-schritt-2-projekt-lokal-einrichten-frontend)
-5.  [Schritt 3: Projekt auf GitHub hochladen](#5-schritt-3-projekt-auf-github-hochladen)
-6.  [Schritt 4: Auf Netlify veröffentlichen (Hosting)](#6-schritt-4-auf-netlify-veröffentlichen-hosting)
-7.  [Anleitung zur Benutzung der App](#7-anleitung-zur-benutzung-der-app)
-8.  [Verständnis der Projektstruktur](#8-verständnis-der-projektstruktur)
+5.  [**KRITISCH: Projekt bereinigen**](#5-kritisch-projekt-bereinigen)
+6.  [Schritt 3: Projekt auf GitHub hochladen](#6-schritt-3-projekt-auf-github-hochladen)
+7.  [Schritt 4: Auf Netlify veröffentlichen (Hosting)](#7-schritt-4-auf-netlify-veröffentlichen-hosting)
+8.  [Anleitung zur Benutzung der App](#8-anleitung-zur-benutzung-der-app)
+9.  [Verständnis der Projektstruktur](#9-verständnis-der-projektstruktur)
 
 ---
 
@@ -124,26 +125,38 @@ Erstellen Sie im Hauptverzeichnis eine neue Datei namens `.env`. Fügen Sie Ihre
 
 ```
 VITE_SUPABASE_URL=IHRE_SUPABASE_PROJEKT_URL
-VITE_SUPabase_anon_key=IHR_SUPABASE_ANON_KEY
+VITE_SUPABASE_ANON_KEY=IHR_SUPABASE_ANON_KEY
 ```
 
 ### 4.3. Lokalen Entwicklungsserver starten
 Führen Sie `npm start` aus. Die App wird unter `http://localhost:5173` geöffnet.
 
-## 5. Schritt 3: Projekt auf GitHub hochladen
+## 5. **KRITISCH: Projekt bereinigen**
+Ihr Projekt enthält veraltete Dateien, die zu Build-Fehlern führen. **Löschen Sie die folgenden Dateien und Ordner aus dem Hauptverzeichnis (root) Ihres Projekts**, falls sie existieren:
+- `App.tsx` (Datei)
+- `Auth.tsx` (Datei)
+- `Layout.tsx` (Datei)
+- `types.ts` (Datei)
+- `index.tsx` (Datei)
+- `components/` (der gesamte Ordner)
+- `services/` (der gesamte Ordner)
+
+**Alle korrekten Dateien befinden sich bereits im `src`-Verzeichnis.** Dieser Schritt ist entscheidend für den Erfolg.
+
+## 6. Schritt 3: Projekt auf GitHub hochladen
 
 1.  Erstellen Sie ein neues, leeres Repository auf [github.com](https://github.com).
 2.  Führen Sie in Ihrem lokalen Projektordner aus:
     ```bash
     git init
     git add .
-    git commit -m "Initial commit"
+    git commit -m "Initial commit of clean project structure"
     git remote add origin <IHRE_GITHUB_REPO_URL.git>
     git branch -M main
     git push -u origin main
     ```
 
-## 6. Schritt 4: Auf Netlify veröffentlichen (Hosting)
+## 7. Schritt 4: Auf Netlify veröffentlichen (Hosting)
 
 1.  Erstellen Sie ein Konto auf [netlify.com](https://netlify.com).
 2.  Wählen Sie **"Add new site"** -> **"Import an existing project"** und wählen Sie Ihr GitHub-Repo aus.
@@ -151,16 +164,19 @@ Führen Sie `npm start` aus. Die App wird unter `http://localhost:5173` geöffne
     -   **Build command:** `npm run build`
     -   **Publish directory:** `dist`
 4.  **EXTREM WICHTIG: Umgebungsvariablen hinzufügen**
-    -   Fügen Sie die **gleichen zwei `VITE_` Variablen** wie in Ihrer `.env`-Datei hinzu.
+    -   Gehen Sie zu **Site configuration -> Build & deploy -> Environment variables**.
+    -   Fügen Sie die **gleichen zwei `VITE_` Variablen** wie in Ihrer `.env`-Datei hinzu. Es muss exakt so aussehen:
+        - Key: `VITE_SUPABASE_URL` | Value: `Ihre Supabase URL`
+        - Key: `VITE_SUPABASE_ANON_KEY` | Value: `Ihr Supabase Anon Key`
 5.  Klicken Sie auf **"Deploy site"**.
 
-## 7. Anleitung zur Benutzung der App
+## 8. Anleitung zur Benutzung der App
 
 - **Fitness-Seite:** Fügen Sie Übungen zur Bibliothek hinzu und protokollieren Sie Trainingseinheiten.
 - **Ernährungs-Seite:** Fügen Sie Lebensmittel (manuell oder per Barcode-Scan) hinzu und protokollieren Sie Ihre Mahlzeiten.
 - **Settings-Seite:** Passen Sie Ihr globales Kalorienziel an und verfolgen Sie Ihr Gewicht.
 
-## 8. Verständnis der Projektstruktur
+## 9. Verständnis der Projektstruktur
 
 ```
 /
