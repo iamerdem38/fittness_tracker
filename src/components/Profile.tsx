@@ -24,7 +24,11 @@ const Profile: React.FC = () => {
                 // Create a profile if it doesn't exist
                 const { data: newProfile, error: insertError } = await supabase.from('profiles').insert({ id: user.id, username: user.email }).select().single();
                 if(insertError) console.error("Error creating profile", insertError);
+<<<<<<< HEAD
                 else if (newProfile){
+=======
+                else {
+>>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
                     setProfile(newProfile);
                     setCalorieGoal(newProfile.calorie_goal);
                 }
@@ -87,18 +91,31 @@ const Profile: React.FC = () => {
                 <div className="bg-base-200 p-6 rounded-lg">
                     <h2 className="text-xl font-bold mb-4">Settings</h2>
                     <div className="space-y-4">
+<<<<<<< HEAD
                         <div className="form-control">
                             <label className="label"><span className="label-text">Email</span></label>
                             <p className="text-lg ml-1">{profile?.username || 'Loading...'}</p>
                         </div>
                         <div className="form-control">
                             <label className="label" htmlFor="calorie-goal"><span className="label-text">Daily Calorie Goal</span></label>
+=======
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300">Email</label>
+                            <p className="text-lg text-gray-400">{profile?.username || 'Loading...'}</p>
+                        </div>
+                        <div>
+                            <label htmlFor="calorie-goal" className="block text-sm font-medium text-gray-300">Daily Calorie Goal</label>
+>>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
                             <input
                                 id="calorie-goal"
                                 type="number"
                                 value={calorieGoal}
                                 onChange={(e) => setCalorieGoal(parseInt(e.target.value))}
+<<<<<<< HEAD
                                 className="input input-bordered w-full"
+=======
+                                className="input input-bordered w-full mt-1"
+>>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
                             />
                         </div>
                         <button onClick={handleUpdateProfile} className="btn btn-primary">
@@ -111,15 +128,24 @@ const Profile: React.FC = () => {
                 <div className="bg-base-200 p-6 rounded-lg">
                     <h2 className="text-xl font-bold mb-4">Log Your Weight</h2>
                     <div className="space-y-4">
+<<<<<<< HEAD
                         <div className="form-control">
                             <label className="label" htmlFor="current-weight"><span className="label-text">Current Weight (kg)</span></label>
+=======
+                        <div>
+                            <label htmlFor="current-weight" className="block text-sm font-medium text-gray-300">Current Weight (kg)</label>
+>>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
                             <input
                                 id="current-weight"
                                 type="number"
                                 value={currentWeight}
                                 onChange={(e) => setCurrentWeight(e.target.value)}
                                 placeholder="e.g., 75.5"
+<<<<<<< HEAD
                                 className="input input-bordered w-full"
+=======
+                                className="input input-bordered w-full mt-1"
+>>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
                             />
                         </div>
                         <button onClick={handleLogWeight} className="btn btn-secondary">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../services/supabase';
+<<<<<<< HEAD
 import { Exercise } from '../types';
 import { Plus, Trash2, X } from './Icons';
 import { DayPicker } from 'react-day-picker';
@@ -8,13 +9,28 @@ import toast from 'react-hot-toast';
 import { ResponsiveContainer, ScatterChart, XAxis, YAxis, ZAxis, Scatter, Tooltip, CartesianGrid } from 'recharts';
 
 // Modal Component
+=======
+import { Exercise, Workout, WorkoutSet } from '../types';
+import { Plus, Trash2, CalendarIcon, ChevronLeft, ChevronRight, X } from './Icons';
+import { DayPicker } from 'react-day-picker';
+import 'react-day-picker/dist/style.css';
+import { format, parseISO } from 'date-fns';
+import toast from 'react-hot-toast';
+import { ResponsiveContainer, ScatterChart, XAxis, YAxis, ZAxis, Scatter, Tooltip, CartesianGrid } from 'recharts';
+
+// Modal Component defined within Fitness.tsx
+>>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
 const Modal = ({ isOpen, onClose, children, title }: { isOpen: boolean, onClose: () => void, children: React.ReactNode, title: string }) => {
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
             <div className="bg-base-200 rounded-lg p-6 w-full max-w-lg relative">
                 <h3 className="text-lg font-bold mb-4">{title}</h3>
+<<<<<<< HEAD
                 <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost absolute top-2 right-2">
+=======
+                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white">
+>>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
                     <X size={24} />
                 </button>
                 {children}
@@ -68,11 +84,19 @@ const Fitness: React.FC = () => {
     }, [fetchExercises, fetchWorkouts]);
 
     const handleAddExercise = async () => {
+<<<<<<< HEAD
         if (!newExerciseName) {
             toast.error("Exercise name cannot be empty.");
             return;
         }
         const { error } = await supabase.from('exercises').insert({
+=======
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || !newExerciseName) return;
+
+        const { error } = await supabase.from('exercises').insert({
+            user_id: user.id,
+>>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
             name: newExerciseName,
             description: newExerciseDesc,
             muscle_group: newExerciseMuscle
@@ -158,22 +182,34 @@ const Fitness: React.FC = () => {
         }
     };
     
+<<<<<<< HEAD
     const uniqueExercises = [...new Set(workouts.map(w => w.exercise))].sort();
+=======
+    const uniqueExercises = [...new Set(workouts.map(w => w.exercise))];
+>>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
 
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold">Fitness</h1>
                 <div className="flex space-x-2">
+<<<<<<< HEAD
                     <button onClick={() => setWorkoutModalOpen(true)} className="btn btn-primary text-primary-content flex items-center">
                         <Plus className="mr-2" size={20} /> Log Workout
                     </button>
                     <button onClick={() => setExerciseModalOpen(true)} className="btn btn-secondary text-secondary-content flex items-center">
+=======
+                    <button onClick={() => setWorkoutModalOpen(true)} className="btn btn-primary text-white font-bold py-2 px-4 rounded-lg flex items-center">
+                        <Plus className="mr-2" size={20} /> Log Workout
+                    </button>
+                    <button onClick={() => setExerciseModalOpen(true)} className="btn btn-secondary text-white font-bold py-2 px-4 rounded-lg flex items-center">
+>>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
                         <Plus className="mr-2" size={20} /> Add Exercise
                     </button>
                 </div>
             </div>
 
+<<<<<<< HEAD
             {/* Workout Logger Modal */}
             <Modal isOpen={isWorkoutModalOpen} onClose={() => setWorkoutModalOpen(false)} title="Log a new Workout">
                 <div className="space-y-4">
@@ -186,24 +222,52 @@ const Fitness: React.FC = () => {
                             value={selectedExerciseId}
                             onChange={(e) => setSelectedExerciseId(e.target.value)}
                             className="select select-bordered w-full"
+=======
+            {/* Workout Logger */}
+            <Modal isOpen={isWorkoutModalOpen} onClose={() => setWorkoutModalOpen(false)} title="Log a new Workout">
+                <div className="space-y-4">
+                    <div className="flex justify-center">
+                        <DayPicker mode="single" selected={selectedDate} onSelect={(date) => date && setSelectedDate(date)} />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium">Exercise</label>
+                        <select
+                            value={selectedExerciseId}
+                            onChange={(e) => setSelectedExerciseId(e.target.value)}
+                            className="mt-1 block w-full select select-bordered"
+>>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
                         >
                             <option value="">Select an exercise</option>
                             {exercises.map(ex => <option key={ex.id} value={ex.id}>{ex.name}</option>)}
                         </select>
                     </div>
+<<<<<<< HEAD
                     <div className="form-control">
                         <label className="label"><span className="label-text">Sets</span></label>
                         {sets.map((set, index) => (
                             <div key={index} className="flex items-center space-x-2 mt-2">
                                 <span className="w-12 text-center font-semibold">Set {index + 1}</span>
+=======
+                    <div>
+                        <label className="block text-sm font-medium">Sets</label>
+                        {sets.map((set, index) => (
+                            <div key={index} className="flex items-center space-x-2 mt-2">
+                                <span className="w-12 text-center">Set {index + 1}</span>
+>>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
                                 <input type="number" placeholder="Weight (kg)" value={set.weight} onChange={(e) => handleSetChange(index, 'weight', e.target.value)} className="input input-bordered w-full" />
                                 <input type="number" placeholder="Reps" value={set.reps} onChange={(e) => handleSetChange(index, 'reps', e.target.value)} className="input input-bordered w-full" />
                                 <button onClick={() => handleRemoveSet(index)} className="btn btn-ghost btn-square text-error"><Trash2 size={18} /></button>
                             </div>
                         ))}
+<<<<<<< HEAD
                         <button onClick={handleAddSet} className="btn btn-link no-underline hover:no-underline p-0 justify-start mt-2 text-primary">+ Add Set</button>
                     </div>
                     <button onClick={handleLogWorkout} className="btn btn-primary w-full">Log Workout</button>
+=======
+                        <button onClick={handleAddSet} className="mt-2 text-sm btn btn-link text-primary no-underline hover:no-underline p-0">+ Add Set</button>
+                    </div>
+                    <button onClick={handleLogWorkout} className="w-full btn btn-primary text-white font-bold py-2 px-4 rounded-lg">Log Workout</button>
+>>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
                 </div>
             </Modal>
             
@@ -211,9 +275,15 @@ const Fitness: React.FC = () => {
              <Modal isOpen={isExerciseModalOpen} onClose={() => setExerciseModalOpen(false)} title="Add a new Exercise">
                 <div className="space-y-4">
                     <input type="text" placeholder="Exercise Name" value={newExerciseName} onChange={(e) => setNewExerciseName(e.target.value)} className="input input-bordered w-full" />
+<<<<<<< HEAD
                     <textarea placeholder="Description (optional)" value={newExerciseDesc} onChange={(e) => setNewExerciseDesc(e.target.value)} className="textarea textarea-bordered w-full"></textarea>
                     <input type="text" placeholder="Muscle Group (optional)" value={newExerciseMuscle} onChange={(e) => setNewExerciseMuscle(e.target.value)} className="input input-bordered w-full" />
                     <button onClick={handleAddExercise} className="btn btn-primary w-full">Add Exercise</button>
+=======
+                    <textarea placeholder="Description" value={newExerciseDesc} onChange={(e) => setNewExerciseDesc(e.target.value)} className="textarea textarea-bordered w-full"></textarea>
+                    <input type="text" placeholder="Muscle Group" value={newExerciseMuscle} onChange={(e) => setNewExerciseMuscle(e.target.value)} className="input input-bordered w-full" />
+                    <button onClick={handleAddExercise} className="w-full btn btn-primary text-white font-bold py-2 px-4 rounded-lg">Add Exercise</button>
+>>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
                 </div>
             </Modal>
 
@@ -276,4 +346,8 @@ const Fitness: React.FC = () => {
     );
 };
 
+<<<<<<< HEAD
 export default Fitness;
+=======
+export default Fitness;
+>>>>>>> 1351c629de9c2193a38f1f5cfd6ad9568cc10320
